@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#14273d">
+  <meta name="description" content="Explore Nexora Technology projects, solutions and innovations.">
+  <title>Our Projects | Nexora Technology</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=19">
+  <script src="projects-data.js?v=1" defer></script>
+  <script src="app.js?v=12" defer></script>
+</head>
+<body><a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header"><a class="wordmark brand-lockup" href="index.html" aria-label="Nexora Technology home"><svg class="brand-symbol" viewBox="0 0 36 36" aria-hidden="true"><path d="M8 27V9l12 18V9M25 27V9l4 6"/></svg><span class="brand-copy"><strong>NEXORA</strong><small>TECHNOLOGY</small></span></a><button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><nav class="site-nav" id="site-nav" aria-label="Main navigation"><a href="index.html">Home</a><a href="services.html">Services</a><a href="industries.html">Industries</a><a href="about.html">About</a><a href="team.html">Our Team</a><a href="projects.html" aria-current="page">Projects</a><a href="insights.html">Insights</a><a href="careers.html">Careers</a><a class="button button-small button-brand nav-cta" href="contact.html">Let's talk <span aria-hidden="true">&#8599;</span></a></nav></header>
+  <main id="main">
+    <section class="page-hero projects-hero"><div class="container page-hero-content"><div class="eyebrow"><span class="status-dot"></span> PROJECTS / WORK IN PRACTICE</div><h1>Our <span>Projects.</span></h1><p>Explore our projects, solutions, and innovations.</p></div></section>
+    <section class="container projects-section" aria-labelledby="projects-title">
+      <div class="projects-heading"><div><div class="eyebrow">SELECTED WORK</div><h2 id="projects-title">Built around real<br><span>business needs.</span></h2></div><p>Browse projects by discipline, search technologies, and explore the details behind each solution.</p></div>
+      <div class="projects-toolbar">
+        <div class="project-filters" role="group" aria-label="Filter projects by category">
+          <button type="button" class="project-filter is-active" data-category="All Projects" aria-pressed="true">All Projects</button>
+          <button type="button" class="project-filter" data-category="Web Development" aria-pressed="false">Web Development</button>
+          <button type="button" class="project-filter" data-category="Mobile Apps" aria-pressed="false">Mobile Apps</button>
+          <button type="button" class="project-filter" data-category="Software Solutions" aria-pressed="false">Software Solutions</button>
+          <button type="button" class="project-filter" data-category="IoT" aria-pressed="false">IoT</button>
+          <button type="button" class="project-filter" data-category="Other" aria-pressed="false">Other</button>
+        </div>
+        <label class="project-search"><span class="visually-hidden">Search projects by name or technology</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg><input id="project-search" type="search" placeholder="Search projects or technology" autocomplete="off"></label>
+      </div>
+      <p class="project-count" id="project-count" aria-live="polite"></p>
+      <div class="project-grid" id="project-grid" aria-live="polite" aria-busy="true"></div>
+      <div class="projects-empty" id="projects-empty" hidden></div>
+      <div class="projects-actions"><button class="button button-dark" id="load-more-projects" type="button" hidden>Load more projects <span aria-hidden="true">↓</span></button></div>
+    </section>
+    <section class="about-cta"><div class="container about-cta-inner"><h2>Have a project in mind?</h2><a class="button button-dark" href="contact.html">Let's talk <span aria-hidden="true">↗</span></a></div></section>
+  </main>
+  <dialog class="project-dialog" id="project-dialog" aria-labelledby="project-dialog-title">
+    <div class="project-dialog-content" id="project-dialog-content"></div>
+    <button class="project-dialog-close" type="button" aria-label="Close project details">×</button>
+  </dialog>
+  <footer class="site-footer"><div class="container footer-main"><a class="wordmark brand-lockup footer-wordmark" href="index.html" aria-label="Nexora Technology home"><svg class="brand-symbol" viewBox="0 0 36 36" aria-hidden="true"><path d="M8 27V9l12 18V9M25 27V9l4 6"/></svg><span class="brand-copy"><strong>NEXORA</strong><small>TECHNOLOGY</small></span></a><p>Support, security and strategy<br>for the way your business works.</p><address class="footer-contact"><strong>CONTACT</strong><span>100 Example Street, Demo City, EX 00000</span><a href="tel:+12025550147">+1 (202) 555-0147</a><a href="mailto:hello@example.com">hello@example.com</a></address><nav class="footer-nav" aria-label="Footer navigation"><a href="index.html">Home</a><a href="services.html">Services</a><a href="industries.html">Industries</a><a href="about.html">About</a><a href="team.html">Our Team</a><a href="projects.html">Projects</a><a href="insights.html">Insights</a><a href="careers.html">Careers</a><a href="contact.html">Contact</a></nav><div class="footer-social"><span>FOLLOW NEXORA</span><div class="social-links"><a href="https://www.linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9v10M5 5v.01M10 19v-6a4 4 0 0 1 8 0v6M10 10v9"/></svg></a><a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/></svg></a><a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 21v-8h3l.5-4H14V7c0-1.2.4-2 2-2h2V1.4C17.3 1.2 16.1 1 14.7 1 11.2 1 9 3.1 9 7v2H6v4h3v8"/></svg></a><a href="https://x.com/" target="_blank" rel="noopener noreferrer" aria-label="X"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 16 16M20 4 4 20M4 4h4l12 16h-4z"/></svg></a></div></div></div><div class="container footer-bottom"><span>&#169; <span id="year"></span> Nexora Technology</span><a href="contact.html">Start a conversation &#8599;</a></div></footer>
+</body>
+</html>
