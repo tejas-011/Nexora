@@ -27,6 +27,8 @@ Nexora is a React website with an Express API and MongoDB database. The original
 
 The API runs on port 5000. `GET /api/health` reports database status. When MongoDB is available, records are stored in MongoDB. If MongoDB is offline, the site seamlessly falls back to local data stores (`projects-data.js`, `team-data.js`, and `server/data/enquiries.json`) so that all pages, filters, modals, and forms work without interruption.
 
+For the contact form, prefer opening the site through `Start-Website.bat` or `http://localhost:5000/contact.html`. If you open `contact.html` directly as a `file://` URL, the form submits to FormSubmit to send the email, but it cannot save that enquiry through the local MongoDB API.
+
 ## Production build
 
 Run `npm run build`, then run `npm start`. Express serves the built React site and its API on port 5000 (`http://localhost:5000`).

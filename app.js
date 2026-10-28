@@ -38,14 +38,13 @@
     sessionStorage.removeItem('contact-interest');
 
     contactForm.addEventListener('submit', async event => {
-      event.preventDefault();
-      if (feedback) feedback.textContent = '';
       if (location.protocol === 'file:') {
-        if (feedback) {
-          feedback.textContent = 'This page was opened directly from a file, so your enquiry was not sent. Open the website with Start-Website.bat and submit the form from the local website page.';
-        }
+        if (feedback) feedback.textContent = 'Sending your enquiry...';
         return;
       }
+
+      event.preventDefault();
+      if (feedback) feedback.textContent = '';
 
       if (submitButton) {
         submitButton.disabled = true;
