@@ -60,6 +60,12 @@
         });
         const result = await response.json();
 
+        if (!response.ok && result.saved) {
+          if (feedback) feedback.textContent = result.message;
+          contactForm.reset();
+          return;
+        }
+
         if (!response.ok) {
           throw new Error(
             typeof result.message === 'string' && result.message
