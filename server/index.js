@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
-import nodemailer from 'nodemailer';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
@@ -14,42 +13,8 @@ const app = express();
 const port = Number(process.env.PORT) || 5000;
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const clientBuild = path.join(root, 'client', 'dist');
-
 app.disable('x-powered-by');
 app.use(express.json({ limit: '16kb' }));
-
-const mailRecipient = process.env.MAIL_TO || 'tejas200400@gmail.com';
-
-function createMailTransport() {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) return null;
-
-  const port = Number(SMTP_PORT);
-  if (!Number.isInteger(port) || port < 1 || port > 65535) {
-    throw new Error('SMTP_PORT must be a valid port number.');
-  }
-
-  return nodemailer.createTransport({
-    host: SMTP_HOST,
-    port,
-    secure: process.env.SMTP_SECURE === 'true',
-    auth: { user: SMTP_USER, pass: SMTP_PASS }
-  });
-}
-
-function formatEnquiryEmail({ name, email, company, interest, message }) {
-  return [
-    'A new enquiry was submitted on the Nexora website.',
-    '',
-    `Name: ${name}`,
-    `Email: ${email}`,
-    `Organization: ${company || 'Not provided'}`,
-    `Interest: ${interest}`,
-    '',
-    'Message:',
-    message
-  ].join('\n');
-}
 
 function normalizeProjects(projects) {
   return projects.map(project => ({
@@ -168,44 +133,9 @@ app.post('/api/enquiries', async (req, res, next) => {
       });
     }
 
-    let transporter;
-    try {
-      transporter = createMailTransport();
-    } catch (error) {
-      console.error('Email settings are invalid:', error.message);
-      return res.status(503).json({
-        saved: true,
-        message: 'Your enquiry was saved, but email delivery is not configured correctly. Please contact us directly.'
-      });
-    }
-
-    if (!transporter) {
-      return res.status(503).json({
-        saved: true,
-        message: 'Your enquiry was saved, but no email was sent. The site owner must configure SMTP email settings.'
-      });
-    }
-
-    try {
-      await transporter.sendMail({
-        from: process.env.MAIL_FROM || process.env.SMTP_USER,
-        to: mailRecipient,
-        replyTo: email,
-        subject: `Nexora website enquiry: ${interest}`,
-        text: formatEnquiryEmail({ name, email, company, interest, message })
-      });
-    } catch (error) {
-      console.error('Could not send enquiry email:', error.message);
-      return res.status(502).json({
-        saved: true,
-        message: 'Your enquiry was saved, but the notification email could not be sent. Please contact us directly.'
-      });
-    }
-
     res.status(201).json({
       saved: true,
-      emailed: true,
-      message: 'Your enquiry was emailed successfully. Thanks for reaching out; we’ll be in touch soon.'
+      message: 'Your enquiry was saved.'
     });
   } catch (error) {
     if (error.name === 'ValidationError') {

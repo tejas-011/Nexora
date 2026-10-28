@@ -74,8 +74,30 @@
           );
         }
 
-        if (feedback) feedback.textContent = result.message;
-        contactForm.reset();
+        const emailAction = contactForm.action.replace('https://formsubmit.co/', 'https://formsubmit.co/ajax/');
+        try {
+          const emailResponse = await fetch(emailAction, {
+              method: 'POST',
+              body: new FormData(contactForm),
+              headers: { Accept: 'application/json' },
+              signal: AbortSignal.timeout(15000)
+          });
+          const emailResult = await emailResponse.json();
+          if (!emailResponse.ok || (emailResult.success !== 'true' && emailResult.success !== true)) {
+              throw new Error(
+                typeof emailResult.message === 'string' && emailResult.message
+                  ? emailResult.message
+                  : 'The email service did not accept the submission.'
+              );
+          }
+          if (feedback) feedback.textContent = 'Your enquiry was emailed successfully. Thanks for reaching out; we’ll be in touch soon.';
+          contactForm.reset();
+        } catch (error) {
+          console.error('Enquiry saved, but email delivery failed:', error);
+          if (feedback) {
+              feedback.textContent = "Your enquiry was saved, but we couldn't email it. Please contact us directly.";
+          }
+        }
       } catch (error) {
         console.error('Contact form submission failed:', error);
         if (feedback) {

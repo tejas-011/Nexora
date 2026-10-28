@@ -39,4 +39,4 @@ Run `npm run build`, then run `npm start`. Express serves the built React site a
 
 ## Email notifications
 
-The contact form only sends email when SMTP is configured. Add `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, and `MAIL_TO` to `.env`, then restart the server. Gmail requires a Google app password; do not use or share your regular account password. Until these settings are present, enquiries are still saved, but the form reports that no email was sent.
+The contact form first saves enquiries through the API to MongoDB, then sends an email directly from the browser through FormSubmit to `tejas200400@gmail.com`. This restores the previously working delivery path; no Gmail SMTP password is needed. The recipient address must be activated with FormSubmit.
