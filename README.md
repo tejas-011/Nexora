@@ -36,3 +36,7 @@ Run `npm run build`, then run `npm start`. Express serves the built React site a
 - `projects-data.js` and `team-data.js` contain the master project and team data.
 - When MongoDB is connected, `npm run seed` imports the seed data into MongoDB collections. If collections are empty on server launch, they will automatically be populated from these files.
 - Contact submissions are stored in MongoDB when connected, or locally in `server/data/enquiries.json` when running in offline mode.
+
+## Email notifications
+
+The contact form only sends email when SMTP is configured. Add `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`, and `MAIL_TO` to `.env`, then restart the server. Gmail requires a Google app password; do not use or share your regular account password. Until these settings are present, enquiries are still saved, but the form reports that no email was sent.
