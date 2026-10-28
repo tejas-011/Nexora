@@ -1,0 +1,28 @@
+{
+  "name": "nexora-mern",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c blue,green \"npm:server:dev\" \"npm:client:dev\"",
+    "server:dev": "nodemon server/index.js",
+    "client:dev": "vite --config client/vite.config.js",
+    "build": "vite build --config client/vite.config.js",
+    "start": "node server/index.js",
+    "seed": "node server/seed.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^5.1.0",
+    "html-react-parser": "^5.2.6",
+    "mongoose": "^8.19.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.7.0",
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.10",
+    "vite": "^6.4.1"
+  }
+}

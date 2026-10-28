@@ -1,6 +1,6 @@
-# Managing project listings
+# Project data
 
-The portfolio is populated from the `window.NEXORA_PROJECT_DATA` array in `projects-data.js`. The site is currently a static HTML/CSS/JavaScript project with no backend or database, so there is no admin login or shared edit form. Edit this array to publish, update, or remove projects. Loading it as a local JavaScript file allows the Projects page to work both when opened directly from disk and when hosted. Entries marked `isSample: true` are examples and are visibly labelled as sample projects. Replace them with approved project information before presenting them as completed company work.
+Projects are served by the Express API from MongoDB. `projects-data.js` is the seed source: edit its array, then run `npm run seed` to replace the MongoDB project collection. There is no admin login or edit form. Entries marked `isSample: true` are labelled as sample projects; replace them with approved project information before presenting them as completed company work.
 
 Add one object per project to the JavaScript array. Required values are `id`, `name`, `shortDescription`, `description`, one of `category` or `categories`, and `technologies`. Use a unique lowercase hyphenated `id`; categories must be `Web Development`, `Mobile Apps`, `Software Solutions`, `IoT`, or `Other`. Use `categories` as an array when a project belongs to more than one category. Use `isSample: true` to mark example projects; omit a project `status` until its actual status is known. If supplied, status must be `Completed` or `In Progress`.
 

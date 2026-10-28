@@ -5,6 +5,14 @@
 *.pem
 *.key
 
+# Node.js dependencies and production build
+node_modules/
+client/dist/
+npm-debug.log*
+
+# Local enquiry storage
+server/data/*.json
+
 # Local editor and operating-system files
 .vscode/
 .idea/
