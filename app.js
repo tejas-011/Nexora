@@ -38,12 +38,14 @@
     sessionStorage.removeItem('contact-interest');
 
     contactForm.addEventListener('submit', async event => {
+      event.preventDefault();
       if (location.protocol === 'file:') {
-        if (feedback) feedback.textContent = 'Sending your enquiry...';
+        if (feedback) {
+          feedback.textContent = 'This form cannot send from a file opened in Chrome. Start the website with Start-Website.bat, then submit it at http://localhost:5000/contact.html.';
+        }
         return;
       }
 
-      event.preventDefault();
       if (feedback) feedback.textContent = '';
 
       if (submitButton) {
