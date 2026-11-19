@@ -12,7 +12,7 @@ export default defineConfig({
         server.middlewares.use((req, res, next) => {
           if (req.url) {
             const [urlPath, query] = req.url.split('?');
-            if (urlPath.endsWith('.html') && urlPath !== '/index.html') {
+            if (urlPath.endsWith('.html') && urlPath !== '/index.html' && !urlPath.startsWith('/@fs/')) {
               req.url = '/index.html' + (query ? '?' + query : '');
             }
           }
@@ -22,12 +22,14 @@ export default defineConfig({
     }
   ],
   server: {
+    port: 5000,
+    strictPort: true,
     proxy: {
-      '/api': 'http://localhost:5000',
-      '/app.js': 'http://localhost:5000',
-      '/styles.css': 'http://localhost:5000',
-      '/projects-data.js': 'http://localhost:5000',
-      '/team-data.js': 'http://localhost:5000'
+      '/api': 'http://localhost:5001',
+      '/app.js': 'http://localhost:5001',
+      '/styles.css': 'http://localhost:5001',
+      '/projects-data.js': 'http://localhost:5001',
+      '/team-data.js': 'http://localhost:5001'
     }
   },
   build: {

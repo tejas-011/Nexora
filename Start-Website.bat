@@ -21,4 +21,4 @@ if not exist "node_modules" (
 echo Starting Nexora MERN development servers...
 start "Nexora MERN" cmd /k "npm run dev"
 timeout /t 5 /nobreak >nul
-start "" http://localhost:5173
+start "" http://localhost:5000

@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
+import nodemailer from 'nodemailer';
 import path from 'node:path';
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
@@ -92,7 +93,7 @@ app.get('/api/team', async (_req, res, next) => {
 });
 
 app.post('/api/enquiries', async (req, res, next) => {
-  const { name, email, company = '', interest = 'general', message, _honey = '' } = req.body ?? {};
+  const { name, email, company = '', interest = 'general', message, submissionId, _honey = '' } = req.body ?? {};
 
   if (_honey) {
     return res.status(400).json({ message: 'The enquiry could not be accepted.' });
@@ -101,13 +102,27 @@ app.post('/api/enquiries', async (req, res, next) => {
     || typeof email !== 'string' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
     || typeof company !== 'string'
     || typeof message !== 'string' || !message.trim()
-    || typeof interest !== 'string') {
+    || typeof interest !== 'string'
+    || typeof submissionId !== 'string' || !/^[\da-f]{8}-([\da-f]{4}-){3}[\da-f]{12}$/i.test(submissionId)) {
     return res.status(400).json({ message: 'Enter a valid name, email address, and message.' });
   }
 
+  const enquiry = {
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
+    company: company.trim(),
+    interest,
+    message: message.trim(),
+    submissionId
+  };
+
   try {
     if (mongoose.connection.readyState === 1) {
-      await Enquiry.create({ name, email, company, interest, message });
+      await Enquiry.findOneAndUpdate(
+        { submissionId },
+        { $set: enquiry },
+        { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+      );
     } else {
       // Persist to local JSON file when MongoDB is offline
       const dataDir = path.join(root, 'server', 'data');
@@ -120,23 +135,66 @@ app.post('/api/enquiries', async (req, res, next) => {
       } catch {
         enquiries = [];
       }
-      enquiries.push({
-        name,
-        email,
-        company,
-        interest,
-        message,
-        createdAt: new Date().toISOString()
-      });
+      const existingIndex = enquiries.findIndex(item => item.submissionId === submissionId);
+      if (existingIndex >= 0) enquiries[existingIndex] = { ...enquiries[existingIndex], ...enquiry };
+      else enquiries.push({ ...enquiry, createdAt: new Date().toISOString() });
       await fs.writeFile(enquiriesPath, JSON.stringify(enquiries, null, 2), 'utf8').catch(err => {
         console.warn('Could not write enquiries.json to disk:', err.message);
       });
     }
 
-    res.status(201).json({
-      saved: true,
-      message: 'Your enquiry was saved.'
-    });
+    const mailUser = process.env.MAIL_USER;
+    const mailPassword = process.env.MAIL_APP_PASSWORD?.replace(/\s+/g, '');
+    if (!mailUser || !mailPassword) {
+      return res.status(503).json({
+        saved: true,
+        emailed: false,
+        message: 'Enquiry saved, but email is not configured. Add MAIL_USER and a Google App Password as MAIL_APP_PASSWORD in .env.'
+      });
+    }
+    if (mailPassword.length !== 16) {
+      return res.status(503).json({
+        saved: true,
+        emailed: false,
+        message: 'Enquiry saved, but MAIL_APP_PASSWORD must be a valid 16-character Google App Password. Generate one in your Google Account and update .env.'
+      });
+    }
+
+    try {
+      const transporter = nodemailer.createTransport({
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: { user: mailUser, pass: mailPassword },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000
+      });
+      await transporter.sendMail({
+        from: mailUser,
+        to: 'tejas200400@gmail.com',
+        replyTo: enquiry.email,
+        subject: `New website enquiry: ${enquiry.interest}`,
+        text: [
+          `Name: ${enquiry.name}`,
+          `Email: ${enquiry.email}`,
+          `Organization: ${enquiry.company || 'Not provided'}`,
+          `Interest: ${enquiry.interest}`,
+          '',
+          enquiry.message
+        ].join('\n')
+      });
+      return res.status(201).json({ saved: true, emailed: true, message: 'Your enquiry was emailed successfully.' });
+    } catch (error) {
+      console.error('Contact email delivery failed:', error.message);
+      return res.status(502).json({
+        saved: true,
+        emailed: false,
+        message: error.code === 'EAUTH'
+          ? 'Enquiry saved, but Gmail rejected the login. Check MAIL_USER and replace MAIL_APP_PASSWORD with a current 16-character Google App Password.'
+          : 'Enquiry saved, but Gmail could not send the email. Check your Gmail SMTP configuration and try again.'
+      });
+    }
   } catch (error) {
     if (error.name === 'ValidationError') {
       return res.status(400).json({ message: 'Please check the enquiry fields and try again.' });

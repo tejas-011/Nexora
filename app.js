@@ -54,57 +54,34 @@
       }
 
       try {
+        const formData = new FormData(contactForm);
+        const enquiry = Object.fromEntries(formData);
+        contactForm.dataset.submissionId ||= crypto.randomUUID();
+        enquiry.submissionId = contactForm.dataset.submissionId;
         const response = await fetch('/api/enquiries', {
           method: 'POST',
-          body: JSON.stringify(Object.fromEntries(new FormData(contactForm))),
-          headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
+          body: JSON.stringify(enquiry),
+          headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+          signal: AbortSignal.timeout(25000)
         });
         const result = await response.json();
 
-        if (!response.ok && result.saved) {
-          if (feedback) feedback.textContent = result.message;
-          contactForm.reset();
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(
-            typeof result.message === 'string' && result.message
-              ? result.message
-              : 'The server did not accept the submission.'
-          );
-        }
-
-        const emailAction = contactForm.action.replace('https://formsubmit.co/', 'https://formsubmit.co/ajax/');
-        try {
-          const emailResponse = await fetch(emailAction, {
-              method: 'POST',
-              body: new FormData(contactForm),
-              headers: { Accept: 'application/json' },
-              signal: AbortSignal.timeout(15000)
-          });
-          const emailResult = await emailResponse.json();
-          if (!emailResponse.ok || (emailResult.success !== 'true' && emailResult.success !== true)) {
-              throw new Error(
-                typeof emailResult.message === 'string' && emailResult.message
-                  ? emailResult.message
-                  : 'The email service did not accept the submission.'
-              );
-          }
+        if (response.ok && result.emailed) {
           if (feedback) feedback.textContent = 'Your enquiry was emailed successfully. Thanks for reaching out; we’ll be in touch soon.';
           contactForm.reset();
-        } catch (error) {
-          console.error('Enquiry saved, but email delivery failed:', error);
-          if (feedback) {
-              feedback.textContent = "Your enquiry was saved, but we couldn't email it. Please contact us directly.";
-          }
+          delete contactForm.dataset.submissionId;
+        } else if (result.saved) {
+          console.error('Enquiry was saved, but email delivery failed:', result.message);
+          if (feedback) feedback.textContent = result.message || 'Your enquiry was saved, but the email could not be sent.';
+        } else {
+          throw new Error(result.message || 'The server could not save your enquiry.');
         }
       } catch (error) {
         console.error('Contact form submission failed:', error);
         if (feedback) {
           feedback.textContent = error instanceof Error && error.message
-            ? `We couldn't send your message: ${error.message}`
-            : "We couldn't send your message. Please try again in a moment.";
+            ? `We couldn't process your enquiry: ${error.message}`
+            : "We couldn't process your enquiry. Please try again.";
         }
       } finally {
         if (submitButton) {
@@ -751,6 +728,105 @@
   const revealTargets = document.querySelectorAll(
     '.section-heading, .home-service, .service-detail, .service-expanded, .project-card, .team-card, .industry-detail-list article, .insight-article, .values-grid article, .career-path-grid > a, .feature-image, .feature-copy, .story-copy, .story-image, .career-story > div, .contact-page-copy, .contact-form, .process-steps > div, .sector-preview-list a, .insight-links a, .careers-preview-inner > div, .home-contact-inner > *, .about-cta-inner > *, .career-cta-inner > *, .career-feature-copy, .career-spotlight, .footer-main > *'
   );
+
+  const scrollProgress = document.createElement('div');
+  scrollProgress.className = 'scroll-progress';
+  scrollProgress.setAttribute('aria-hidden', 'true');
+  document.body.append(scrollProgress);
+
+  const pointerGlow = document.createElement('div');
+  pointerGlow.className = 'pointer-glow';
+  pointerGlow.setAttribute('aria-hidden', 'true');
+  document.body.append(pointerGlow);
+
+  const siteHeader = document.querySelector('.site-header');
+  let scrollTicking = false;
+
+  const updateScrollEffects = () => {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    const progress = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+    scrollProgress.style.transform = `scaleX(${Math.min(1, Math.max(0, progress))})`;
+    siteHeader?.classList.toggle('is-scrolled', window.scrollY > 24);
+
+    const heroCover = document.querySelector('.hero-cover');
+    const careerCover = document.querySelector('.career-feature > img');
+    if (window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+      const cover = heroCover || careerCover;
+      if (cover) {
+        const rect = cover.closest('section')?.getBoundingClientRect();
+        if (rect) {
+          const offset = Math.max(-18, Math.min(18, (window.innerHeight * .5 - rect.top) * .025));
+          cover.style.transform = `translateY(${offset}px) scale(1.055)`;
+        }
+      }
+    }
+    scrollTicking = false;
+  };
+
+  window.addEventListener('scroll', () => {
+    if (!scrollTicking) {
+      window.requestAnimationFrame(updateScrollEffects);
+      scrollTicking = true;
+    }
+  }, { passive: true });
+  updateScrollEffects();
+
+  if (window.matchMedia('(pointer: fine)').matches
+      && window.matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    let pointerFrame = 0;
+    let pointerX = 0;
+    let pointerY = 0;
+    window.addEventListener('pointermove', event => {
+      pointerX = event.clientX;
+      pointerY = event.clientY;
+      document.body.classList.add('pointer-active');
+      if (!pointerFrame) {
+        pointerFrame = window.requestAnimationFrame(() => {
+          pointerGlow.style.left = `${pointerX}px`;
+          pointerGlow.style.top = `${pointerY}px`;
+          pointerFrame = 0;
+        });
+      }
+    }, { passive: true });
+    document.documentElement.addEventListener('mouseleave', () => {
+      document.body.classList.remove('pointer-active');
+    });
+
+    document.querySelectorAll(
+      '.home-service, .service-detail, .project-card, .team-card, .values-grid article, .career-path-grid > a'
+    ).forEach(card => {
+      card.classList.add('is-tinted');
+      card.addEventListener('pointermove', event => {
+        const rect = card.getBoundingClientRect();
+        const x = event.clientX - rect.left;
+        const y = event.clientY - rect.top;
+        card.style.setProperty('--pointer-x', `${(x / rect.width) * 100}%`);
+        card.style.setProperty('--pointer-y', `${(y / rect.height) * 100}%`);
+        const rotateY = ((x / rect.width) - .5) * 5;
+        const rotateX = ((y / rect.height) - .5) * -5;
+        card.style.setProperty('--tilt-x', `${rotateX.toFixed(2)}deg`);
+        card.style.setProperty('--tilt-y', `${rotateY.toFixed(2)}deg`);
+      });
+      card.addEventListener('pointerleave', () => {
+        card.style.setProperty('--tilt-x', '0deg');
+        card.style.setProperty('--tilt-y', '0deg');
+      });
+    });
+
+    document.querySelectorAll('.button, .project-filter, .team-filter, .social-links a, .service-detail-nav a').forEach(control => {
+      control.addEventListener('pointerdown', event => {
+        const rect = control.getBoundingClientRect();
+        const ripple = document.createElement('span');
+        ripple.className = 'ripple';
+        ripple.style.left = `${event.clientX - rect.left}px`;
+        ripple.style.top = `${event.clientY - rect.top}px`;
+        control.append(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      });
+    });
+  }
+
+  requestAnimationFrame(() => document.body.classList.add('page-ready'));
 
   if ('IntersectionObserver' in window) {
     const revealObserver = new IntersectionObserver((entries, observer) => {

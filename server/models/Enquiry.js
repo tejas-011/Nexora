@@ -9,7 +9,8 @@ const enquirySchema = new mongoose.Schema({
     enum: ['general', 'managed-it', 'cloud', 'security', 'recovery', 'infrastructure', 'strategy', 'careers'],
     default: 'general'
   },
-  message: { type: String, required: true, trim: true, maxlength: 5000 }
+  message: { type: String, required: true, trim: true, maxlength: 5000 },
+  submissionId: { type: String, unique: true, sparse: true }
 }, { timestamps: true, versionKey: false });
 
 export default mongoose.model('Enquiry', enquirySchema);

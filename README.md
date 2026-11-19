@@ -23,9 +23,9 @@ Nexora is a React website with an Express API and MongoDB database. The original
    npm run dev
    ```
 
-   Open `http://localhost:5173`. On Windows, double-clicking `Start-Website.bat` automatically starts the development servers and opens your browser.
+   Open `http://localhost:5000`. On Windows, double-clicking `Start-Website.bat` automatically starts the development servers and opens your browser.
 
-The API runs on port 5000. `GET /api/health` reports database status. When MongoDB is available, records are stored in MongoDB. If MongoDB is offline, the site seamlessly falls back to local data stores (`projects-data.js`, `team-data.js`, and `server/data/enquiries.json`) so that all pages, filters, modals, and forms work without interruption.
+In development, the website runs on port 5000 and the API runs on port 5001. `GET /api/health` reports database status. When MongoDB is available, records are stored in MongoDB. If MongoDB is offline, the site seamlessly falls back to local data stores (`projects-data.js`, `team-data.js`, and `server/data/enquiries.json`) so that all pages, filters, modals, and forms work without interruption.
 
 For the contact form, open the site through `Start-Website.bat` or `http://localhost:5000/contact.html`. FormSubmit does not accept pages opened directly as `file://` URLs, and those pages cannot save enquiries through the local MongoDB API.
 
@@ -41,4 +41,11 @@ Run `npm run build`, then run `npm start`. Express serves the built React site a
 
 ## Email notifications
 
-The contact form first saves enquiries through the API to MongoDB, then sends an email directly from the browser through FormSubmit to `tejas200400@gmail.com`. This restores the previously working delivery path; no Gmail SMTP password is needed. The recipient address must be activated with FormSubmit.
+The contact API saves each enquiry to MongoDB and sends the notification through Gmail SMTP to `tejas200400@gmail.com`. Set these variables in the private `.env` file:
+
+```env
+MAIL_USER=tejas200400@gmail.com
+MAIL_APP_PASSWORD=your-16-character-google-app-password
+```
+
+Create a Google App Password from your Google Account's **Security → 2-Step Verification → App passwords** page; 2-Step Verification must be enabled, and a regular Gmail password will not work. App passwords are 16 characters. Paste the generated password into `.env` (spaces are removed automatically), then restart the server. If Gmail returns an authentication error, generate a fresh App Password and verify `MAIL_USER` is the same Google account that created it. Enquiries are saved even if email delivery fails, and retrying the same form submission will not create duplicate database records.

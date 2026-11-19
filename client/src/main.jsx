@@ -5,12 +5,15 @@ import '../../styles.css';
 import { getPage } from './pages.js';
 
 function Page() {
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [currentLocation, setCurrentLocation] = useState(() => (
+    window.location.pathname + window.location.search
+  ));
+  const currentPath = new URL(currentLocation, window.location.origin).pathname;
 
   // Handle browser back and forward buttons
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPath(window.location.pathname);
+      setCurrentLocation(window.location.pathname + window.location.search);
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -19,35 +22,24 @@ function Page() {
   // Smooth internal SPA navigation for all local links
   useEffect(() => {
     const handleLinkClick = (e) => {
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (!(e.target instanceof Element)) return;
       const anchor = e.target.closest('a');
-      if (!anchor) return;
-      const href = anchor.getAttribute('href');
-      if (!href) return;
-      if (
-        href.startsWith('http://') ||
-        href.startsWith('https://') ||
-        href.startsWith('//') ||
-        href.startsWith('mailto:') ||
-        href.startsWith('tel:') ||
-        href.startsWith('#') ||
-        anchor.target === '_blank'
-      ) {
-        return;
-      }
+      if (!anchor || anchor.hasAttribute('download') || (anchor.target && anchor.target !== '_self')) return;
 
-      // Check if href has an in-page hash like "service-details.html#managed-it"
-      const [pathPart, hashPart] = href.split('#');
+      const destination = new URL(anchor.href, window.location.href);
+      if (destination.origin !== window.location.origin) return;
+      if (destination.pathname === window.location.pathname
+        && destination.search === window.location.search) return;
+
       e.preventDefault();
+      const nextLocation = destination.pathname + destination.search;
+      window.history.pushState({}, '', nextLocation + destination.hash);
+      setCurrentLocation(nextLocation);
 
-      const normalizedPath = pathPart.startsWith('/') ? pathPart : `/${pathPart}`;
-      const finalUrl = hashPart ? `${normalizedPath}#${hashPart}` : normalizedPath;
-
-      window.history.pushState({}, '', finalUrl);
-      setCurrentPath(normalizedPath);
-
-      if (hashPart) {
+      if (destination.hash) {
         setTimeout(() => {
-          const targetEl = document.getElementById(hashPart);
+          const targetEl = document.getElementById(destination.hash.slice(1));
           if (targetEl) targetEl.scrollIntoView({ behavior: 'smooth' });
         }, 100);
       } else {
@@ -80,7 +72,7 @@ function Page() {
     return () => {
       script.remove();
     };
-  }, [currentPath, title]);
+  }, [currentLocation, title]);
 
   if (!body) {
     throw new Error(`Could not load page content for ${currentPath}.`);
